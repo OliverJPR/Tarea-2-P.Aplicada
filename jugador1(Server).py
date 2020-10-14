@@ -46,7 +46,8 @@ def checkWinner(board,position,currentPlayer,sock):
                     marks+=1
                     if marks==3:
                         print (player1, ' es el ganador!\Gracias')
-                        sock.send('%s es el ganador!\Gracias'%player1)
+                        if(sock != ""):
+                            sock.send('%s es el ganador!\Gracias'%player1)
                         return True
             marks=0
     else:
@@ -58,12 +59,14 @@ def checkWinner(board,position,currentPlayer,sock):
                     marks+=1
                     if marks==3:
                         print (player2, ' es el ganador!\Gracias')
-                        sock.send('%s es el ganador!\Gracias'%player2)
+                        if(sock != ""):
+                            sock.send('%s es el ganador!\Gracias'%player2)
                         return True
             marks=0
     if len(player1M)+len(player2M)==9:
         print ('Hubo un empate!')
-        sock.send('Hubo un empate!')
+        if(sock != ""):
+            sock.send('Hubo un empate!')
         return True
     return False
 
@@ -80,10 +83,12 @@ def theGame(location,sock,currentPlayer):
         try:
             board[0][board[0].index(' %s '%position)]=piece(currentPlayer)
             printBoard()
-            sock.send(constructBoard())
+            if(sock != ""):
+                sock.send(constructBoard())
         except:
             if currentPlayer==player2:
-                sock.send('\nError en 1 de las 3 primeras posiciones')
+                if(sock != ""):
+                    sock.send('\nError en 1 de las 3 primeras posiciones')
             else:
                 print ('\nError en 1 de las 3 primeras posiciones')
 
@@ -94,7 +99,8 @@ def theGame(location,sock,currentPlayer):
             sock.send(constructBoard())
         except:
             if currentPlayer==player2:
-                sock.send('\nError en 1 de las posiciones del medio')
+                if(sock != ""):
+                    sock.send('\nError en 1 de las posiciones del medio')
             else:
                 print ('\nError en 1 de las posiciones del medio')
     elif int(position) in range(7,10):
@@ -104,12 +110,14 @@ def theGame(location,sock,currentPlayer):
             sock.send(constructBoard())
         except:
             if currentPlayer==player2:
-                sock.send('\nError en 1 de las 3 ultimas posiciones')
+                if(sock != ""):
+                    sock.send('\nError en 1 de las 3 ultimas posiciones')
             else:
                 print ('\nError en 1 de las 3 ultimas posiciones')
     else:
         if currentPlayer==player2:
-            sock.send('Posicion fuera del rango!')
+            if(sock != ""):
+                sock.send('Posicion fuera del rango!')
         else:
             print ('Posicion fuera del rango')
 
@@ -123,7 +131,7 @@ def jugadorvsjugador():
     s.bind((host, port))
     print ('\n\nEl juego esta corriendo en el puerto %s:%s esperando al Jugador 2'%(host,port))
     s.listen(1)
-    sock, addr = s.accept()         
+    sock, addr = s.accept()       
     while True:
         print ('El Jugador 2 se ha conectado!', addr)
         a="Se ha conectado correctamente a %s "%host
@@ -153,7 +161,34 @@ def jugadorvsjugador():
                 currentPlayer=changePlayer(currentPlayer)
         break
     sock.close()
-    
+
+def jugadorvsmaquina():
+    isFinished=False
+    print ("Usted a elegido la opcion de Jugador vs Maquina")         
+    while True:
+        player1="Jugador 1"
+        player2="Maquina"
+        players.append(player1)
+        players.append(player2)
+        play = '\nLobby\n%s vs. %s\n\n%s'%(player1,player2,constructBoard())
+        print (play)
+        currentPlayer = random.choice(players)
+        sock = ""
+        while isFinished==False:
+            if currentPlayer==player1:
+                print ('\n\nEs tu turno. %s elige la posicion que deseas jugar'%player1)
+                position=raw_input()
+                theGame(position,sock,currentPlayer)
+                isFinished=checkWinner(board, position,currentPlayer,sock)
+                currentPlayer=changePlayer(currentPlayer)
+            else:
+                position=random.randint(1, 9)
+                theGame(position,sock,currentPlayer)
+                isFinished=checkWinner(board, position,currentPlayer,sock)
+                currentPlayer=changePlayer(currentPlayer)
+        break
+    salir = True
+
 
 salir = False
 opcion = 0
@@ -171,7 +206,8 @@ while not salir:
         jugadorvsjugador()
         salir = True
     elif opcion == "2":
-       print("Pendiente")
+       jugadorvsmaquina()
+       salir = True
     elif opcion == "3":
         salir = True
     else:
