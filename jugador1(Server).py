@@ -8,7 +8,9 @@ board = [[' 1 ',' 2 ',' 3 '],[' 4 ',' 5 ',' 6 '],[' 7 ',' 8 ',' 9 ']]
 player1M=[]
 player2M=[]
 players=[]
-isFinished=False
+player1="Jugador 1"
+player2="Jugador 2"
+
 
 
 def constructBoard():
@@ -111,6 +113,48 @@ def theGame(location,sock,currentPlayer):
         else:
             print ('Posicion fuera del rango')
 
+def jugadorvsjugador():
+    isFinished=False
+    print ('\nUsted a elegido la opcion de Jugador vs Jugador')
+    host = '192.168.0.8'
+
+    s = socket.socket()
+    port = 21217               
+    s.bind((host, port))
+    print ('\n\nEl juego esta corriendo en el puerto %s:%s esperando al Jugador 2'%(host,port))
+    s.listen(1)
+    sock, addr = s.accept()         
+    while True:
+        print ('El Jugador 2 se ha conectado!', addr)
+        a="Se ha conectado correctamente a %s "%host
+        sock.send(str(a))
+        player2 = sock.recv(4096)
+        player1="Jugador 1"
+        players.append(player1)
+        players.append(player2)
+        play = '\nLobby\n%s vs. %s\n\n%s'%(player1,player2,constructBoard())
+        print (play)
+        sock.send(play)
+        currentPlayer = random.choice(players)
+        while isFinished==False:
+            if currentPlayer==player1:
+                print ('\n\nEs tu turno. %s elige la posicion que deseas jugar'%player1)
+                sock.send("\n\nEs el turno de %s. Espera su jugada..."%player1)
+                position=raw_input()
+                theGame(position,sock,currentPlayer)
+                isFinished=checkWinner(board, position,currentPlayer,sock)
+                currentPlayer=changePlayer(currentPlayer)
+            else:
+                print ("\n\nEs el turno de %s. Espera su jugada..."%player2)
+                sock.send("\n\nEs tu turno. %s elige la posicion que deseas jugar"%player2)
+                position=sock.recv(4096)
+                theGame(position,sock,currentPlayer)
+                isFinished=checkWinner(board, position,currentPlayer,sock)
+                currentPlayer=changePlayer(currentPlayer)
+        break
+    sock.close()
+    
+
 salir = False
 opcion = 0
 while not salir:
@@ -124,47 +168,10 @@ while not salir:
     opcion = raw_input("Elige una opcion:")
  
     if opcion == "1":
-        print ('\nUsted a elegido la opcion de Jugador vs Jugador')
-        host = '192.168.0.8'
-
-        s = socket.socket()
-        port = 21217               
-        s.bind((host, port))
-        print ('\n\nEl juego esta corriendo en el puerto %s:%s esperando al Jugador 2'%(host,port))
-        s.listen(1)
-        sock, addr = s.accept()         
-        while True:
-            print ('El Jugador 2 se ha conectado!', addr)
-            a="Se ha conectado correctamente a %s "%host
-            sock.send(str(a))
-            player2 = sock.recv(4096)
-            player1="Jugador 1"
-            players.append(player1)
-            players.append(player2)
-            play = '\nLobby\n%s vs. %s\n\n%s'%(player1,player2,constructBoard())
-            print (play)
-            sock.send(play)
-            currentPlayer = random.choice(players)
-            while isFinished==False:
-                if currentPlayer==player1:
-                    print ('\n\nEs tu turno. %s elige la posicion que deseas jugar'%player1)
-                    sock.send("\n\nEs el turno de %s. Espera su jugada..."%player1)
-                    position=raw_input()
-                    theGame(position,sock,currentPlayer)
-                    isFinished=checkWinner(board, position,currentPlayer,sock)
-                    currentPlayer=changePlayer(currentPlayer)
-                else:
-                    print ("\n\nEs el turno de %s. Espera su jugada..."%player2)
-                    sock.send("\n\nEs tu turno. %s elige la posicion que deseas jugar"%player2)
-                    position=sock.recv(4096)
-                    theGame(position,sock,currentPlayer)
-                    isFinished=checkWinner(board, position,currentPlayer,sock)
-                    currentPlayer=changePlayer(currentPlayer)
-            break
-        sock.close()
+        jugadorvsjugador()
         salir = True
     elif opcion == "2":
-        print ("Pendiente")
+       print("Pendiente")
     elif opcion == "3":
         salir = True
     else:
