@@ -172,7 +172,7 @@ def jugadorvsmaquina():
         players.append(player2)
         play = '\nLobby\n%s vs. %s\n\n%s'%(player1,player2,constructBoard())
         print (play)
-        currentPlayer = random.choice(players)
+        currentPlayer = player1
         sock = ""
         while isFinished==False:
             if currentPlayer==player1:
